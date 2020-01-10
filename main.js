@@ -11,7 +11,7 @@ var app = http.createServer(function (request, response) {
     if (pathname=='/'){
         if (queryData.id === undefined){
             fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description) {
-                var title = '환영';
+                var title = '압도적 환영';
                 var description = 'hello nodejs';
                 var template = `
             <!DOCTYPE html>
@@ -32,6 +32,13 @@ var app = http.createServer(function (request, response) {
         
                 gtag('config', 'UA-155572449-1');
             </script>
+            <style>
+                h1 {
+                    color:blue;
+                    font-size:100px;
+                    text-align: left;
+                }
+            </style>
         </head>
         
         <body>
@@ -41,7 +48,7 @@ var app = http.createServer(function (request, response) {
                 <li><a href="/?id=20200105">2020.01.05</a></li>
                 <li><a href="/?id=20200106">2020.01.06</a></li>
             </ol>
-            <h1>${title}</h1>
+            <h2>${title}</h2>
             ${description}
             <p>
                 <div id="disqus_thread"></div>
