@@ -1,8 +1,11 @@
 var http = require('http');
 var fs = require('fs');
 var url = require('url');
+var googleanaltyics = fs.readFileSync('function/google', 'utf8')
+var tawk = fs.readFileSync('function/tawk', 'utf8')
+var disqus = fs.readFileSync('function/disqus', 'utf8')
 
-function templateHTML(title, list, body) {
+function templateHTML(title, list, body, google, tawk, disqus) {
     return `            
     <!DOCTYPE html>
     <html>
@@ -10,18 +13,7 @@ function templateHTML(title, list, body) {
     <head>
         <title>오늘의 뉴스 ${title}</title>
         <meta charset="utf-8">
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155572449-1"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-    
-            function gtag() {
-                dataLayer.push(arguments);
-            }
-            gtag('js', new Date());
-    
-            gtag('config', 'UA-155572449-1');
-        </script>
+        ${google}
     </head>
     
     <body>
@@ -29,41 +21,11 @@ function templateHTML(title, list, body) {
         ${list}
         ${body}
         <p>
-            <div id="disqus_thread"></div>
-            <script>
-                /**
-                 *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
-                 *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
-                /*
-                var disqus_config = function () {
-                this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
-                this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-                };
-                */
-                (function () { // DON'T EDIT BELOW THIS LINE
-                    var d = document,
-                        s = d.createElement('script');
-                    s.src = 'https://web1-yufiq6cwqc.disqus.com/embed.js';
-                    s.setAttribute('data-timestamp', +new Date());
-                    (d.head || d.body).appendChild(s);
-                })();
-            </script>
-            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by
-                    Disqus.</a></noscript>
-        </p><!-- 댓글기능 추가 -->
-        <script type="text/javascript">
-        var Tawk_API = Tawk_API || {},
-            Tawk_LoadStart = new Date();
-        (function () {
-            var s1 = document.createElement("script"),
-                s0 = document.getElementsByTagName("script")[0];
-            s1.async = true;
-            s1.src = 'https://embed.tawk.to/5e14596d27773e0d832c3fc1/default';
-            s1.charset = 'UTF-8';
-            s1.setAttribute('crossorigin', '*');
-            s0.parentNode.insertBefore(s1, s0);
-        })();
-        </script>
+        ${disqus}
+        </p>
+        <p>
+        ${tawk}
+        </p>
     </body>
     </html>
     `
@@ -94,7 +56,7 @@ var app = http.createServer(function (request, response) {
                 var title = '압도적 환영';
                 var description = 'hello nodejs';
                 var list = templateLIST(filelist);
-                var template = templateHTML(title, list, `<h1>${title}</h1>${description}`);
+                var template = templateHTML(title, list, `<h1>${title}</h1>${description}`, googleanaltyics, tawk, disqus);
                 response.writeHead(200);
                 response.end(template);
             })
@@ -103,7 +65,7 @@ var app = http.createServer(function (request, response) {
                 var list = templateLIST(filelist);
                 fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description) {
                     var title = queryData.id;
-                    var template = templateHTML(title, list, `<h1>${title}</h1>${description}`);
+                    var template = templateHTML(title, list, `<h1>${title}</h1>${description}`, googleanaltyics, tawk, disqus);
                     response.writeHead(200);
                     response.end(template);
                 });
