@@ -11,13 +11,13 @@ function templateHTML(title, list, body, google, tawk, disqus) {
     <html>
     
     <head>
-        <title>오늘의 뉴스 ${title}</title>
+        <title>오늘의 뉴스 ~~ ${title}</title>
         <meta charset="utf-8">
         ${google}
     </head>
     
     <body>
-        <h1><a href="/">News</a></h1>
+        <h1><a href="/">News!</a></h1>
         ${list}
         ${body}
         <p>
