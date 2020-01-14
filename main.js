@@ -1,6 +1,7 @@
 var http = require('http');
 var fs = require('fs');
 var url = require('url');
+var qs = require('querystring');
 var googleanaltyics = fs.readFileSync('function/google', 'utf8')
 var tawk = fs.readFileSync('function/tawk', 'utf8')
 var disqus = fs.readFileSync('function/disqus', 'utf8')
@@ -19,6 +20,7 @@ function templateHTML(title, list, body, google, tawk, disqus) {
     <body>
         <h1><a href="/">News!</a></h1>
         ${list}
+        <a href="/create">create</a>
         ${body}
         <p>
         ${disqus}
@@ -48,7 +50,6 @@ var app = http.createServer(function (request, response) {
     var queryData = url.parse(_url, true).query; //쿼리문 아래의 내용들을 지정
     var title = queryData.id;
     var pathname = url.parse(_url, true).pathname;
-
     if (pathname == '/') {
         if (queryData.id === undefined) {
             fs.readdir('./data', function (error, filelist) {
@@ -72,6 +73,39 @@ var app = http.createServer(function (request, response) {
             });
         }
 
+    } else if (pathname === '/create') {
+        fs.readdir('./data', function (error, filelist) {
+            console.log(filelist);
+            var title = 'WEB-CREATE';
+            var list = templateLIST(filelist);
+            var template = templateHTML(title, list, `
+            <form action="http://localhost:3000/create_process" method="post">
+                <p><input type="text" name="title" placeholder="title"></p>
+                <p>
+                    <textarea name="discription" placeholder="discription"></textarea>
+                </p>
+                <p>
+                    <input type="submit">
+                </p>
+            </form>`, googleanaltyics, tawk, disqus);
+            response.writeHead(200);
+            response.end(template);
+        })
+    } else if (pathname === '/create_process') {
+        var body = '';
+        request.on('data', function (data) {
+            body = body + data;
+        });
+        request.on('end', function () {
+            var post = qs.parse(body);
+            var title = post.title;
+            var discription = post.discription;
+            fs.writeFile(`data/${title}`, discription, 'utf8', function(err){
+                response.writeHead(302, {Location: `/?id=${title}`});
+                response.end();
+            })
+            console.log(post.title);
+        });
     } else {
         response.writeHead(404);
         response.end('Not found');
