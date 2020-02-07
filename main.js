@@ -2,6 +2,7 @@ var http = require('http');
 var fs = require('fs');
 var url = require('url');
 var qs = require('querystring');
+var path = require('path');
 var googleanaltyics = fs.readFileSync('function/google', 'utf8')
 var tawk = fs.readFileSync('function/tawk', 'utf8')
 var disqus = fs.readFileSync('function/disqus', 'utf8')
@@ -16,7 +17,6 @@ var app = http.createServer(function (request, response) {
     if (pathname == '/') {
         if (queryData.id === undefined) {
             fs.readdir('./data', function (error, filelist) {
-                console.log(filelist);
                 var title = '압도적 환영';
                 var description = 'hello nodejs';
                 var list = template.LIST(filelist);
@@ -27,7 +27,8 @@ var app = http.createServer(function (request, response) {
         } else {
             fs.readdir('./data', function (error, filelist) {
                 var list = template.LIST(filelist);
-                fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description) {
+                var filteredID = path.parse(queryData.id).base;
+                fs.readFile(`data/${filteredID}`, 'utf8', function (err, description) {
                     var title = queryData.id;
                     var html = template.HTML(title, list, `<h1>${title}</h1>${description}`, googleanaltyics, tawk, disqus,
                         `<a href="/create">create</a> 
@@ -36,7 +37,6 @@ var app = http.createServer(function (request, response) {
                             <input type="hidden" name="id" value="${title}">
                             <input type="submit" value="delete">
                         </form>`);
-                        console.log(description)
                     response.writeHead(200);
                     response.end(html);
                 });
@@ -45,7 +45,6 @@ var app = http.createServer(function (request, response) {
 
     } else if (pathname === '/create') {
         fs.readdir('./data', function (error, filelist) {
-            console.log(filelist);
             var title = 'WEB-CREATE';
             var list = template.LIST(filelist);
             var html = template.HTML(title, list, `
@@ -69,19 +68,20 @@ var app = http.createServer(function (request, response) {
         request.on('end', function () {
             var post = qs.parse(body);
             var title = post.title;
+            console.log(title)
             var discription = post.discription;
             fs.writeFile(`data/${title}`, discription, 'utf8', function (err) {
                 response.writeHead(302, {
                     Location: `/?id=${title}`
                 });
                 response.end();
-            })
-            console.log(post.title);
+            });
         });
     } else if (pathname === '/update') {
         fs.readdir('./data', function (error, filelist) {
             var list = template.LIST(filelist);
-            fs.readFile(`data/${queryData.id}`, 'utf8', function (err, description) {
+            var filteredID = path.parse(queryData.id).base;
+            fs.readFile(`data/${filteredID}`, 'utf8', function (err, description) {
                 var title = queryData.id;
                 var html = template.HTML(title, list, `
                 <form action="/update_process" method="post">
@@ -108,6 +108,8 @@ var app = http.createServer(function (request, response) {
             var post = qs.parse(body);
             var id = post.id;
             var title = post.title;
+            console.log(title)
+            console.log(id)
             var discription = post.discription;
             fs.rename(`data/${id}`, `data/${title}`, function (error) {
                 fs.writeFile(`data/${title}`, discription, 'utf8', function (err) {
